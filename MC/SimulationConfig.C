@@ -31,7 +31,6 @@ const Char_t *SimulationName[kNSimulations] = {
 SimulationConfig(AliSimulation &sim, ESimulation_t tag)
 {
   
-  
   switch(tag) {
     
     // Default
@@ -95,6 +94,11 @@ SimulationDefault(AliSimulation &sim)
     // set OCDB 
     gROOT->LoadMacro("$ALIDPG_ROOT/MC/OCDBConfig.C");
     OCDBDefault(0);
+  }
+  else if (ocdbConfig.Contains("cvmfs")) {
+    // set OCDB
+    gROOT->LoadMacro("$ALIDPG_ROOT/MC/OCDBConfig.C");
+    OCDBDefault(0, kTRUE);
   }
   else {
     // set OCDB snapshot mode

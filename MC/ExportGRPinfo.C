@@ -7,10 +7,16 @@ ExportGRPinfo(Int_t run)
   TString ocdbConfig = "default,snapshot";
   if (gSystem->Getenv("CONFIG_OCDB"))
     ocdbConfig = gSystem->Getenv("CONFIG_OCDB");
+  cout<<ocdbConfig.Data()<<endl;
   if (ocdbConfig.Contains("alien")) {
     // set OCDB 
     gROOT->LoadMacro("$ALIDPG_ROOT/MC/OCDBConfig.C");
     OCDBDefault(0);
+  }
+  else if (ocdbConfig.Contains("cvmfs")) {
+    // set OCDB
+    gROOT->LoadMacro("$ALIDPG_ROOT/MC/OCDBConfig.C");
+    OCDBDefault(0, kTRUE);
   }
   else {
     // set OCDB snapshot mode

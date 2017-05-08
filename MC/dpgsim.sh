@@ -405,6 +405,14 @@ if [[ $CONFIG_OCDB == *"snapshot"* ]]; then
     fi    
 fi
 
+if [[ $CONFIG_OCDB == *"cvmfs"* ]]; then
+
+    if [ ! -d /cvmfs/alice-ocdb.cern.ch/calibration ]; then
+        echo ">>>>> ERROR: Could not find OCDB in /cvmfs/alice-ocdb.cern.ch"
+        exit 2
+    fi
+fi
+
 ### automatic settings from CONFIG_MODE
 
 if [[ $CONFIG_MODE == *"Muon"* ]]; then

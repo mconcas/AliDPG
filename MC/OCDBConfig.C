@@ -43,22 +43,40 @@ OCDBConfig(Int_t tag, Int_t type)
 
 /*****************************************************************/
 
-OCDBDefault(Int_t mode)
+OCDBDefault(Int_t mode, Bool_t cvmfs=kFALSE)
 {
 
   Int_t run  = atoi(gSystem->Getenv("CONFIG_RUN"));  
   AliCDBManager* man = AliCDBManager::Instance();
-  man->SetDefaultStorage("raw://");
+
+  // This hardcoded map allows for extracting the year parameter in place of the `getUriFromYear.sh`
+  // available for very older setups (2009-2013).
+  // It is meant to be a temporary workaround, until everything will be hopefully set up to work with
+  // current OCDB repository in `/cvmfs/alice-ocdb.cern.ch`
+  if (cvmfs) {
+    Int_t startrun[9] = {64788, 105524, 139675, 170719, 194480, 200001, 208505, 247174, 268198};
+    Int_t endrun[9] = {105523, 139674, 170718, 194479, 199177, 208504, 247173, 268197, 999999};
+    Char_t* year[9] = {"2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017"};
+    TString runYear = "";
+
+    for (Int_t i=0; i<9; ++i) if ((run > startrun[i]) && (run < endrun[i])) runYear = year[i];
+
+    TString defStorage = Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%s/OCDB/", runYear.Data());
+    man->SetDefaultStorage(defStorage.Data());
+  }
+  else {
+    man->SetDefaultStorage("raw://");
+  }
   man->SetRun(run);
   
   // set detector specific paths
-  DefaultSpecificStorage(man, mode);
+  DefaultSpecificStorage(man, mode, cvmfs);
 
 }
 
 /*****************************************************************/
 
-DefaultSpecificStorage(AliCDBManager *man, Int_t mode)
+DefaultSpecificStorage(AliCDBManager *man, Int_t mode, Bool_t cvmfs=kFALSE)
 {
 
   AliCDBEntry *cdbe = man->Get("GRP/GRP/Data");
@@ -66,13 +84,22 @@ DefaultSpecificStorage(AliCDBManager *man, Int_t mode)
   AliGRPObject *grp = (AliGRPObject *)cdbe->GetObject();
   TDatime date = grp->GetTimeStart();
   Int_t year = date.GetYear();
-
-  const Char_t *Raw      = Form("alien://Folder=/alice/data/%d/OCDB", year);
-  const Char_t *Ideal    = "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/";
-  const Char_t *Residual = "alien://Folder=/alice/simulation/2008/v4-15-Release/Residual/";
-  const Char_t *Full     = "alien://Folder=/alice/simulation/2008/v4-15-Release/Full/";
-  // for AD hack 
-  const Char_t *Raw2015  = "alien://Folder=/alice/data/2015/OCDB";
+  if (cvmfs) {
+    const Char_t *Raw      = Form("local:///cvmfs/alice-ocdb.cern.ch/calibration/data/%d/OCDB/", year);
+    const Char_t *Ideal    = "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Ideal/";
+    const Char_t *Residual = "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Residual/";
+    const Char_t *Full     = "local:///cvmfs/alice-ocdb.cern.ch/calibration/MC/Full/";
+    // for AD hack
+    const Char_t *Raw2015  = "local:///cvmfs/alice-ocdb.cern.ch/calibration/alice/data/2015/OCDB";
+  }
+  else {
+    const Char_t *Raw      = Form("alien://Folder=/alice/data/%d/OCDB", year);
+    const Char_t *Ideal    = "alien://Folder=/alice/simulation/2008/v4-15-Release/Ideal/";
+    const Char_t *Residual = "alien://Folder=/alice/simulation/2008/v4-15-Release/Residual/";
+    const Char_t *Full     = "alien://Folder=/alice/simulation/2008/v4-15-Release/Full/";
+    // for AD hack
+    const Char_t *Raw2015  = "alien://Folder=/alice/data/2015/OCDB";
+  }
   
   // DEFAULT SPECIFIC OBJECTS 
   const Char_t *SpecificStorageList[][3] = {
