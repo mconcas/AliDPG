@@ -251,6 +251,14 @@ while [ ! -z "$1" ]; do
         shift 
     elif [ "$option" = "--ocdb" ]; then
         CONFIG_OCDB="$1"
+        if [[ $CONFIG_OCDB == cvmfs* ]]; then
+            if  [[ $CONFIG_OCDB == "cvmfs" ]]; then
+                 export OCDB_PATH=/cvmfs/alice-ocdb.cern.ch
+            else
+                 export OCDB_PATH=${CONFIG_OCDB#*:}
+                 CONFIG_OCDB=${CONFIG_OCDB%%:*}
+            fi
+        fi
 	export CONFIG_OCDB
         shift 
     elif [ "$option" = "--hlt" ]; then
